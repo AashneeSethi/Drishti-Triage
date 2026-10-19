@@ -1,0 +1,6 @@
+call_id,caller_number,receiver_number,direction,timestamp_original,timezone_original,timezone_basis,duration_sec,call_type
+CALL-101,+919811223344,+919123456789,INCOMING,2026-09-30 09:15:00,Asia/Kolkata,device setting,45,VOICE
+CALL-170,+919876543210,+919123456789,INCOMING,2026-09-30 14:01:00,Asia/Kolkata,device setting,180,VOICE
+CALL-182,+919876543210,+919123456789,INCOMING,2026-09-30 14:05:00,Asia/Kolkata,device setting,120,VOICE
+CALL-190,+919876543210,+919123456789,INCOMING,2026-09-30 14:05:00,UTC,report header,120,VOICE
+CALL-205,+919988776655,+919123456789,MISSED,2026-09-30 15:30:00,Asia/Kolkata,device setting,0,VOICE

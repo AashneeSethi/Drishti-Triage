@@ -1,0 +1,64 @@
+{
+  "case_id": "CASE-DT-2026-001",
+  "case_name": "Operation Digital Arrest",
+  "victim": {
+    "name": "Ramesh Kumar (Fictional)",
+    "phone": "+919123456789",
+    "vpa": "victim@okhdfcbank"
+  },
+  "fraudster": {
+    "phone": "+919876543210"
+  },
+  "mule_network": [
+    {
+      "tier": 1,
+      "vpa": "mule.a@fakeupi",
+      "account": "ACC-MULE-A"
+    },
+    {
+      "tier": 2,
+      "vpa": "mule.b@fakeupi",
+      "account": "ACC-MULE-B"
+    },
+    {
+      "tier": 3,
+      "vpa": "mule.c@fakeupi",
+      "account": "ACC-MULE-C"
+    }
+  ],
+  "planted_traps": [
+    {
+      "trap_id": "TRAP-TIMEZONE-01",
+      "description": "CALL-190 (UTC report header) vs UPI-236 (IST bank export)",
+      "apparent_order_in_raw_strings": "UPI-236 is 3 minutes after CALL-190",
+      "ground_truth_order_in_utc": "UPI-236 occurred 5 hours 27 minutes BEFORE CALL-190",
+      "call_utc": "2026-09-30T14:05:00Z",
+      "upi_utc": "2026-09-30T08:38:00Z",
+      "expected_claim_status": "CONTRADICTED"
+    },
+    {
+      "trap_id": "CONTROL-TIMEZONE-01",
+      "description": "CALL-182 (IST device setting) vs UPI-241 (IST bank export)",
+      "call_utc": "2026-09-30T08:35:00Z",
+      "upi_utc": "2026-09-30T08:38:12Z",
+      "utc_delta_seconds": 192,
+      "expected_claim_status": "VERIFIED"
+    }
+  ],
+  "anomalies": [
+    {
+      "type": "TRANSACTION_BURST",
+      "window_minutes": 15,
+      "txns": [
+        "UPI-241",
+        "UPI-244",
+        "UPI-247"
+      ]
+    },
+    {
+      "type": "FAILED_THEN_RETRIED",
+      "failed": "UPI-246",
+      "retried_success": "UPI-247"
+    }
+  ]
+}
