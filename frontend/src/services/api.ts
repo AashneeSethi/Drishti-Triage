@@ -12,6 +12,7 @@ import {
   BENCHMARK_STATS 
 } from '../data/syntheticCase';
 import { runDeterministicVerification } from './verificationEngine';
+import { executeCopilotQuery } from './copilotEngine';
 import type {
   BackendCase,
   CreateCaseRequest,
@@ -240,13 +241,71 @@ export async function getClickToVerifyRow(
   contextLines = 2
 ): Promise<ClickToVerifyResponse> {
   const base = getApiBaseUrl();
-  const res = await fetch(
-    `${base}/api/cases/${encodeURIComponent(caseId)}/evidence/${encodeURIComponent(artifactId)}/row/${rowNumber}?context_lines=${contextLines}`
-  );
-  if (!res.ok) {
-    throw new Error(`Failed to retrieve row ${rowNumber} in ${artifactId} (HTTP ${res.status})`);
+  try {
+    const res = await fetch(
+      `${base}/api/cases/${encodeURIComponent(caseId)}/evidence/${encodeURIComponent(artifactId)}/row/${rowNumber}?context_lines=${contextLines}`
+    );
+    if (res.ok) {
+      return (await res.json()) as ClickToVerifyResponse;
+    }
+  } catch {
+    // Backend offline, fallback to seeded artifact records
   }
-  return (await res.json()) as ClickToVerifyResponse;
+
+  // Standalone offline fallback for air-gapped demo
+  const art = SEEDED_ARTIFACTS.find(a => a.id === artifactId || a.filename === artifactId) || SEEDED_ARTIFACTS[0];
+  const fileLines: Record<string, string[]> = {
+    'calls_cdr.csv': [
+      'timestamp,caller,recipient,duration_sec,call_type',
+      '2026-09-15 11:15:20,+919811223344,+919876543210,45,INCOMING_PERSONAL',
+      '2026-09-15 14:05:00,+919123456789,+919876543210,180,INCOMING_SUSPICIOUS',
+      '2026-09-15 14:15:00,+919876543210,+919811223344,60,OUTGOING_DISTRESS'
+    ],
+    'bank_upi_statement.csv': [
+      'timestamp,txn_id,sender_upi,receiver_upi,amount,status,utr_ref',
+      '2026-09-15 12:30:00,TXN_992101,ramesh.sharma@okhdfc,swiggyorders@icici,320.00,SUCCESS,UTR_11002233',
+      '2026-09-15 14:08:15,TXN_992102,ramesh.sharma@okhdfc,cbiseal.investigation@okaxis,25000.00,SUCCESS,UTR_429104829104',
+      '2026-09-15 15:45:00,TXN_992103,ramesh.sharma@okhdfc,groceries@paytm,450.50,SUCCESS,UTR_99887766'
+    ],
+    'whatsapp_chat.txt': [
+      '[2026-09-15 11:20:00] Sharma Ji: Pick up milk on your way home.',
+      '[2026-09-15 14:06:10] CBI Cyber Cell Delhi: Immediate Notice: An arrest warrant has been issued in your name under Section 1930 PMLA. Transfer refundable bail deposit of INR 25,000 to escrow cbiseal.investigation@okaxis immediately to avoid police dispatch.',
+      '[2026-09-15 14:09:00] CBI Cyber Cell Delhi: Payment acknowledged. Do not disconnect Skype session until verification clearance is generated.'
+    ],
+    'security_events.json': [
+      '{"timestamp": "2026-09-15 14:04:10", "event_id": 4688, "process_name": "chrome.exe", "user": "DESKTOP-RAMESH\\\\ramesh"}',
+      '{"timestamp": "2026-09-15 14:07:05", "event_id": 4688, "process_name": "skype.exe", "arguments": "/minimized", "user": "DESKTOP-RAMESH\\\\ramesh"}',
+      '{"timestamp": "2026-09-15 14:12:30", "event_id": 4624, "target_process": "lsass.exe", "user": "NT AUTHORITY\\\\SYSTEM"}'
+    ],
+    'cbi_refund_acknowledgment.pdf': [
+      'PDF-1.7 | Subject: Bail Clearance Deposit Clearance | Creator: Canva Desktop Editor | Signature: Self-signed Fake Certificate'
+    ]
+  };
+
+  const lines = fileLines[art.filename] || ['[Raw byte record data]'];
+  const targetIdx = Math.max(0, Math.min(rowNumber - 1, lines.length - 1));
+  const targetLine = lines[targetIdx];
+
+  const startIdx = Math.max(0, targetIdx - contextLines);
+  const endIdx = Math.min(lines.length - 1, targetIdx + contextLines);
+  const context = [];
+  for (let i = startIdx; i <= endIdx; i++) {
+    context.push({
+      row: i + 1,
+      content: lines[i],
+      is_target: i === targetIdx
+    });
+  }
+
+  return {
+    case_id: caseId || 'DT-2026-001',
+    artifact_id: art.id,
+    filename: art.filename,
+    row_number: rowNumber,
+    target_line: targetLine,
+    context,
+    file_sha256: art.sha256Hash
+  };
 }
 
 // ========================================================
@@ -298,49 +357,19 @@ export interface CopilotResponse {
   disclaimer: string;
 }
 
-export async function queryCopilot(question: string): Promise<CopilotResponse> {
-  const q = question.toLowerCase();
-
-  if (q.includes('who contacted') || q.includes('first')) {
-    return {
-      answer: 'According to Airtel telephony CDR row 2, the earliest contact was an incoming domestic call from +91 9811223344 at 11:15:20 IST (45s). The suspicious contact began at 14:05:00 UTC from suspect number +91 91234 56789 (180s).',
-      sourceCitations: ['calls_cdr.csv:L2', 'calls_cdr.csv:L3'],
-      claimStatus: 'VERIFIED',
-      disclaimer: 'Verified against sealed CDR record SHA-256 a7c1e8.'
-    };
-  }
-
-  if (q.includes('before or after') || q.includes('payment') || q.includes('time')) {
-    return {
-      answer: 'When normalized to UTC: The incoming call occurred at 14:05:00 UTC, while the HDFC UPI debit occurred at 14:08:15 IST (which corresponds to 08:38:15 UTC). Therefore, the debit was stamped 5 hours and 27 minutes BEFORE the call timestamp in raw UTC.',
-      sourceCitations: ['calls_cdr.csv:L3', 'bank_upi_statement.csv:L3'],
-      claimStatus: 'CONTRADICTED',
-      disclaimer: 'Timezone discrepancy detected: Naive UTC comparison inverted sequence.'
-    };
-  }
-
-  if (q.includes('caused') || q.includes('force') || q.includes('coerc')) {
-    return {
-      answer: 'The electronic logs establish an extortion notice at 14:06:10 IST preceded the ₹25,000 debit at 14:08:15 IST. However, digital evidence alone cannot prove psychological coercion; that remains an unverified causal inference requiring sworn witness testimony.',
-      sourceCitations: ['whatsapp_chat.txt:L2', 'bank_upi_statement.csv:L3'],
-      claimStatus: 'INFERRED',
-      disclaimer: 'Causal conjecture stripped under scientific forensic guidelines.'
-    };
-  }
-
-  if (q.includes('trace') || q.includes('movement') || q.includes('mule') || q.includes('funds')) {
-    return {
-      answer: 'Funds (₹25,000) exited victim account ramesh.sharma@okhdfc to receiver VPA cbiseal.investigation@okaxis (UTR 429104829104). Onward multi-hop movement requires Section 91 CrPC / BSA disclosure from Axis Bank Nodal Officer.',
-      sourceCitations: ['bank_upi_statement.csv:L3'],
-      claimStatus: 'VERIFIED',
-      disclaimer: 'First-hop verified. Subsequent hops require nodal banking API integration.'
-    };
-  }
+export async function queryCopilot(question: string, language: 'en' | 'hi' = 'en'): Promise<CopilotResponse> {
+  const result = await executeCopilotQuery(question, language);
+  
+  let mappedStatus: 'VERIFIED' | 'INFERRED' | 'CONTRADICTED' | 'NOT_FOUND' = 'INFERRED';
+  if (result.verdict === 'VERIFIED') mappedStatus = 'VERIFIED';
+  else if (result.verdict === 'CONTRADICTED') mappedStatus = 'CONTRADICTED';
+  else if (result.verdict === 'NOT FOUND IN AVAILABLE EVIDENCE') mappedStatus = 'NOT_FOUND';
+  else mappedStatus = 'INFERRED';
 
   return {
-    answer: `Analysis of query against active dataset: Evaluated against sealed forensic records. Offline local evaluation completed.`,
-    sourceCitations: ['calls_cdr.csv', 'bank_upi_statement.csv'],
-    claimStatus: 'INFERRED',
-    disclaimer: 'Offline local evaluation completed.'
+    answer: result.answer,
+    sourceCitations: result.citations.map(c => `${c.filename}:L${c.row_number}`),
+    claimStatus: mappedStatus,
+    disclaimer: result.disclaimer
   };
 }

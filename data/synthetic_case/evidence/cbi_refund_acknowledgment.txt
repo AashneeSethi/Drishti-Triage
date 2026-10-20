@@ -1,0 +1,13 @@
+Document Type: Provisional Bail Clearance Deposit Receipt
+Case Reference: CBI/EOW/2026/0991
+Subject: Ramesh Kumar (Victim)
+Claimed Signatory: Central Bureau of Investigation, New Delhi
+Receipt Amount: ₹25,000.00 (Refundable Bond)
+Recipient VPA: cbiseal.investigation@okaxis
+
+--- EXTRACTED FORENSIC METADATA ---
+PDF Producer: Canva Desktop Editor v2.4
+Creation Date: 2026-09-30 13:45:00 IST
+Digital Signature: Self-signed X.509 cert (Subject: OU=CBI Seal Generator, CN=CBI-Test, Valid: 1 day)
+Hash Integrity: SHA-256 992a0194bc0281ef847120a94e823b10294e7721a983b6201948271049281a94
+Notes: Discrepancy detected: Legitimate government orders are not generated via Canva Desktop Editor.

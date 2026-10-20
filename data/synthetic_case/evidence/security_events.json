@@ -1,0 +1,26 @@
+[
+  {
+    "timestamp": "2026-09-30 14:04:10",
+    "event_id": 4688,
+    "process_name": "chrome.exe",
+    "command_line": "chrome.exe --profile-directory=Default",
+    "user": "DESKTOP-RAMESH\\ramesh",
+    "notes": "Routine browser activity before fraud incident."
+  },
+  {
+    "timestamp": "2026-09-30 14:07:05",
+    "event_id": 4688,
+    "process_name": "skype.exe",
+    "command_line": "skype.exe /minimized /call:cbi_investigation_hq",
+    "user": "DESKTOP-RAMESH\\ramesh",
+    "notes": "Remote video surveillance session established by impostors under Digital Arrest pretense."
+  },
+  {
+    "timestamp": "2026-09-30 14:12:30",
+    "event_id": 4624,
+    "process_name": "lsass.exe",
+    "command_line": "C:\\Windows\\system32\\lsass.exe",
+    "user": "NT AUTHORITY\\SYSTEM",
+    "notes": "Elevated logon query recorded during active remote session."
+  }
+]

@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
-    "test": "npx tsx --test test/forensic_verifier.test.ts",
+    "test": "npx tsx --test test/forensic_verifier.test.ts test/copilot_benchmark.test.ts",
     "preview": "vite preview"
   },
   "dependencies": {

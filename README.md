@@ -29,5 +29,23 @@ cd frontend
 npm install
 npm run dev
 ```
-
 The investigation workstation will be accessible at `http://localhost:5173/`.
+
+### Running the Backend API
+```bash
+python -m uvicorn backend.main:app --port 8000
+```
+Interactive OpenAPI/Swagger documentation will be accessible at `http://localhost:8000/docs`.
+
+### Running All Automated Tests (61 Tests)
+```bash
+# 1. Frontend & Ground-Truth Benchmark Suite (22 tests)
+cd frontend
+npm test
+
+# 2. Evidence Vault & Parser Ingestion Suite (13 tests)
+python tests/run_all.py
+
+# 3. Forensic Engine Analytics & Verifier Suite (26 tests)
+python -m pytest backend_forensic_engine
+```

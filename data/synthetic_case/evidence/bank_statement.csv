@@ -1,0 +1,9 @@
+txn_id,timestamp_original,timezone_original,timezone_basis,sender_account,sender_vpa,receiver_account,receiver_vpa,amount,currency,txn_type,status,reference_no
+UPI-210,2026-09-30 08:30:00,Asia/Kolkata,bank export header,+919123456789,victim@okhdfcbank,ACC-998811,groceries@okaxis,450.00,INR,UPI_DEBIT,SUCCESS,RRN-99881122
+UPI-236,2026-09-30 14:08:15,Asia/Kolkata,bank export header,+919123456789,victim@okhdfcbank,ACC-MULE-A,mule.a@fakeupi,25000.00,INR,UPI_DEBIT,SUCCESS,RRN-44001122
+UPI-241,2026-09-30 14:08:12,Asia/Kolkata,bank export header,+919123456789,victim@okhdfcbank,ACC-MULE-A,mule.a@fakeupi,25000.00,INR,UPI_DEBIT,SUCCESS,RRN-44110022
+UPI-244,2026-09-30 14:12:30,Asia/Kolkata,bank export header,+919123456789,victim@okhdfcbank,ACC-MULE-A,mule.a@fakeupi,40000.00,INR,UPI_DEBIT,SUCCESS,RRN-44110033
+UPI-246,2026-09-30 14:14:00,Asia/Kolkata,bank export header,+919123456789,victim@okhdfcbank,ACC-MULE-A,mule.a@fakeupi,10000.00,INR,UPI_DEBIT,FAILED,RRN-44110044
+UPI-247,2026-09-30 14:15:30,Asia/Kolkata,bank export header,+919123456789,victim@okhdfcbank,ACC-MULE-A,mule.a@fakeupi,10000.00,INR,UPI_DEBIT,SUCCESS,RRN-44110055
+UPI-250,2026-09-30 14:17:00,Asia/Kolkata,bank export header,ACC-MULE-A,mule.a@fakeupi,ACC-MULE-B,mule.b@fakeupi,20000.00,INR,UPI_TRANSFER,SUCCESS,RRN-55220011
+UPI-255,2026-09-30 14:21:00,Asia/Kolkata,bank export header,ACC-MULE-B,mule.b@fakeupi,ACC-MULE-C,mule.c@fakeupi,18000.00,INR,UPI_TRANSFER,SUCCESS,RRN-66330022
